@@ -6,6 +6,7 @@ import com.lin.commons.exception.SimpleMQClientException;
 import com.lin.commons.utils.network.Request;
 
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
 
 /**
  * 远程客户端，当消费者需要从远程服务器获取消息时需要使用该类的实现者
@@ -52,10 +53,14 @@ public interface RemoteClient<T, V> {
 
     /**
      * 判断该远程呢客户端是否在还
+     *
      * @param url
      * @param port
      * @return
      */
     public boolean isConnected(String url, int port);
+
+
+    public void sendMessageToServer(String url, int port, Request request, Partition partition, SingleRequestCallBackListener listener, long time, TimeUnit unit) throws ExecutionException, InterruptedException, SimpleMQClientException;
 
 }

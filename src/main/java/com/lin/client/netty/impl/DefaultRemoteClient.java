@@ -2,6 +2,7 @@ package com.lin.client.netty.impl;
 
 import com.lin.client.ResponseFuture;
 import com.lin.client.netty.RemoteClient;
+import com.lin.client.netty.SingleRequestCallBackListener;
 import com.lin.client.netty.encode.NettyMessageDecoder;
 import com.lin.client.netty.encode.NettyMessageEncoder;
 import com.lin.commons.cluster.Partition;
@@ -19,9 +20,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.Objects;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.FutureTask;
+import java.util.concurrent.*;
 
 /**
  * @author jianglinzou
@@ -35,6 +34,8 @@ public class DefaultRemoteClient implements RemoteClient {
     private EventLoopGroup group = new NioEventLoopGroup();
 
     private Bootstrap b = new Bootstrap();
+
+    private static final Executor localExecutor = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
 
 
     //维持当前客户端已连接的channel,主要由于broker失效，客户端需要选择broker重新连接
@@ -98,6 +99,44 @@ public class DefaultRemoteClient implements RemoteClient {
         }
         return true;
     }
+
+    @Override
+    public void sendMessageToServer(String url, int port, Request request, Partition partition, SingleRequestCallBackListener listener, long time, TimeUnit unit) throws ExecutionException, InterruptedException, SimpleMQClientException {
+        Executor executor = null;
+
+            FutureTask<Boolean> connectTask = futuretasks.get(generatekey(url, port));//确保在发送消息到服务器时连接已经建立完成；
+            connectTask.get();//确保连接已经建立完成
+            Channel channel = channels.get(generatekey(url, port));
+            if (Objects.isNull(channel) || !channel.isOpen()) {
+                throw new SimpleMQClientException("服务器通道异常关闭");
+            }
+            if (Objects.isNull(request) || Objects.isNull(request.getHeader())) {
+                logger.error("the data is error ,please ensure request and request's header not null ");
+                throw new SimpleMQClientException("the data is error ,please ensure request and request's header not null");
+            }
+            final ResponseFuture<Response, Request> responseFuture = new ResponseFuture<>();
+            responseFuture.setRequest(request);
+            channel.writeAndFlush(request);
+            responses.put(request.getHeader().getRequestId(), responseFuture);
+//            Response response = responseFuture.get(time, unit);
+            executor = listener.getExecutor();
+            if (Objects.isNull(executor)) {
+                executor = localExecutor;
+            }
+            executor.execute(() -> {
+                try {
+                    Response response = responseFuture.get(time, unit);
+                    listener.onResponse(response);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                    logger.info("fail to get response because of :{}", e);
+                    listener.onException(e);
+                }
+            });
+        }
+
+
+
 
 
     public void connect(int port, String host, int time) {

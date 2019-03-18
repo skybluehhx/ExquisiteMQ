@@ -5,6 +5,7 @@ import com.lin.client.MessageUtils;
 import com.lin.client.MetaMessageSessionFactory;
 import com.lin.client.ResponseFuture;
 import com.lin.client.netty.RemoteClient;
+import com.lin.client.netty.SingleRequestCallBackListener;
 import com.lin.commons.Message;
 import com.lin.commons.MessageAccessor;
 import com.lin.commons.PartitionSelector;
@@ -25,6 +26,8 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.Objects;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Executor;
+import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Pattern;
 
@@ -262,47 +265,40 @@ public class SimpleMessageProducer implements MessageProducer {
 
 
     public void sendMessage(final Message message, final SendMessageCallback cb, final int time, final TimeUnit unit) {
-//        try {
-//            final String topic = message.getTopic();
-//            final Partition partition = this.selectPartition(message);
-//            if (partition == null) {
-//                throw new SimpleMQClientException("There is no aviable partition for topic " + topic
-//                        + ",maybe you don't publish it at first?");
-//            }
-//            final String serverUrl = this.producerZooKeeper.selectBroker(topic, partition);
-//            if (serverUrl == null) {
-//                throw new SimpleMQClientException("There is no aviable server right now for topic " + topic
-//                        + " and partition " + partition + ",maybe you don't publish it at first?");
-//            }
-//
-//            final int flag = MessageFlagUtils.getFlag(message);
-//            final byte[] encodedData = MessageUtils.encodePayload(message);
-//            final PutCommand putCommand =
-//                    new PutCommand(topic, partition.getPartition(), encodedData, flag, CheckSum.crc32(encodedData),
-//                            this.getTransactionId(), OpaqueGenerator.getNextOpaque());
-//            this.remotingClient.sendToGroup(serverUrl, putCommand, new SingleRequestCallBackListener() {
-//                @Override
-//                public void onResponse(final ResponseCommand responseCommand, final Connection conn) {
-//                    final SendResult rt =
-//                            SimpleMessageProducer.this.genSendResult(message, partition, serverUrl,
-//                                    (BooleanCommand) responseCommand);
-//                    cb.onMessageSent(rt);
-//                }
-//
-//
-//                public void onException(final Exception e) {
-//                    cb.onException(e);
-//                }
-//
-//
-//                public ThreadPoolExecutor getExecutor() {
-//                    return null;
-//                }
-//            }, time, unit);
-//
-//        } catch (final Throwable e) {
-//            cb.onException(e);
-//        }
+        try {
+            final String topic = message.getTopic();
+            final Partition partition = this.selectPartition(message);
+            if (partition == null) {
+                throw new SimpleMQClientException("There is no aviable partition for topic " + topic
+                        + ",maybe you don't publish it at first?");
+            }
+            final String serverUrl = this.producerZooKeeper.selectBroker(topic, partition);
+            if (serverUrl == null) {
+                throw new SimpleMQClientException("There is no aviable server right now for topic " + topic
+                        + " and partition " + partition + ",maybe you don't publish it at first?");
+            }
+            Request request = MessageUtils.generateRequest(message, sessionId);
+            URI uri = new URI(serverUrl);
+            this.remotingClient.sendMessageToServer(uri.getHost(), uri.getPort(), request, partition, new SingleRequestCallBackListener() {
+                @Override
+                public void onResponse(Response response) {
+                    final SendResult rt = SimpleMessageProducer.this.genSendResult(message, partition, serverUrl, response);
+                    cb.onMessageSent(rt);
+                }
+                @Override
+                public void onException(Exception exception) {
+                    cb.onException(exception);
+                }
+                @Override
+                public Executor getExecutor() {
+                    return null;
+                }
+            }, time, unit);
+
+
+        } catch (final Throwable e) {
+            cb.onException(e);
+        }
         return;
     }
 
