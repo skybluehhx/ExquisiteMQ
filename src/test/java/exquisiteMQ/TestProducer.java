@@ -14,7 +14,7 @@ import java.io.InputStreamReader;
 import static exquisiteMQ.Helper.initMetaConfig;
 
 /**
- * 对生产者的测试
+ * 同步消息发送者
  *
  * @author jianglinzou
  * @date 2019/3/12 下午4:39
@@ -48,8 +48,6 @@ public class TestProducer {
         }
 
     }
-
-
 
 
 }
