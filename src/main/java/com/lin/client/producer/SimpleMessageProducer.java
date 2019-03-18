@@ -266,12 +266,15 @@ public class SimpleMessageProducer implements MessageProducer {
 
     public void sendMessage(final Message message, final SendMessageCallback cb, final int time, final TimeUnit unit) {
         try {
+            this.checkState();
+            this.checkMessage(message);
             final String topic = message.getTopic();
             final Partition partition = this.selectPartition(message);
             if (partition == null) {
                 throw new SimpleMQClientException("There is no aviable partition for topic " + topic
                         + ",maybe you don't publish it at first?");
             }
+            MessageAccessor.setPartition(message, partition);
             final String serverUrl = this.producerZooKeeper.selectBroker(topic, partition);
             if (serverUrl == null) {
                 throw new SimpleMQClientException("There is no aviable server right now for topic " + topic
@@ -285,10 +288,12 @@ public class SimpleMessageProducer implements MessageProducer {
                     final SendResult rt = SimpleMessageProducer.this.genSendResult(message, partition, serverUrl, response);
                     cb.onMessageSent(rt);
                 }
+
                 @Override
                 public void onException(Exception exception) {
                     cb.onException(exception);
                 }
+
                 @Override
                 public Executor getExecutor() {
                     return null;

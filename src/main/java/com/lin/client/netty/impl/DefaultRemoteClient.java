@@ -126,6 +126,7 @@ public class DefaultRemoteClient implements RemoteClient {
                     Response response = responseFuture.get(time, unit);
                     listener.onResponse(response);
                 } catch (Exception e) {
+                    e.printStackTrace();
                     logger.info("fail to get response because of :{}", e);
                     listener.onException(e);
                 }
@@ -133,8 +134,9 @@ public class DefaultRemoteClient implements RemoteClient {
         };
         if (Objects.isNull(executor)) {
             runnable.run();
+        } else {
+            executor.execute(runnable);
         }
-        executor.execute(runnable);
     }
 
 

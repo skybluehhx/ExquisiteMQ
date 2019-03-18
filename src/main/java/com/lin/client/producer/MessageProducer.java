@@ -47,7 +47,7 @@ public interface MessageProducer extends Shutdownable {
 
 
     /**
-     * 异步发送消息，在指定时间内回调callback,此模式下无法使用事务
+     * 异步发送消息，在指定时间内回调callback
      *
      * @param message
      * @param cb
@@ -59,7 +59,7 @@ public interface MessageProducer extends Shutdownable {
 
 
     /**
-     * 异步发送消息，在默认时间内（3秒）回调callback，此模式下无法使用事务
+     * 异步发送消息，在默认时间内（3秒）回调callback
      *
      * @param message
      * @param cb

@@ -27,7 +27,7 @@ public class TestAsyncProducer {
         // create producer,强烈建议使用单例
         final MessageProducer producer = sessionFactory.createProducer();
         // publish topic
-        final String topic = "slave-test";
+        final String topic = "lin";
         producer.publish(topic);
 
         final BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));

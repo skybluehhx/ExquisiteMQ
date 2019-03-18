@@ -176,8 +176,8 @@ public class ProducerZooKeeper implements ZkClientChangedListener {
                     final String oldBrokerString = oldEntry.getValue();
                     // TODO: 2019/3/9
                     final URI uri = new URI(oldBrokerString);
-                    ProducerZooKeeper.this.remotingClient.colseConnectToRemoteServer( uri.getHost(),uri.getPort());
-                   log.warn("Closed " + oldBrokerString);
+                    ProducerZooKeeper.this.remotingClient.colseConnectToRemoteServer(uri.getHost(), uri.getPort());
+                    log.warn("Closed " + oldBrokerString);
                 }
                 // Connect to new brokers
                 for (final Map.Entry<Integer, String> newEntry : newBrokerStringMap.entrySet()) {
@@ -186,7 +186,8 @@ public class ProducerZooKeeper implements ZkClientChangedListener {
                     final URI uri = new URI(newBrokerString);
                     //需要注意channel是否已经初始化
                     try {
-                        ProducerZooKeeper.this.remotingClient.connectRomotingServer(uri.getHost(), uri.getPort(),  60 * 1000);
+                        ProducerZooKeeper.this.remotingClient.connectRomotingServer(uri.getHost(), uri.getPort(), 60 * 1000);
+                        log.warn("Connected to host:" + uri.getHost() + "port:" + uri.getPort());
                         // TODO: 2019/3/9
 //                        ProducerZooKeeper.this.remotingClient.awaitReadyInterrupt(newBrokerString, 10000);
 //                         new InterruptedException();
@@ -194,7 +195,7 @@ public class ProducerZooKeeper implements ZkClientChangedListener {
                         Thread.currentThread().interrupt();
                         throw new IllegalStateException("Connecting to broker is interrupted", e);
                     }
-                    log.warn("Connected to " + newBrokerString);
+
                 }
 
                 // Set the new brokers info. 设置新的brokersInfo信息
