@@ -11,6 +11,8 @@ import java.io.BufferedReader;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 
+import static exquisiteMQ.Helper.initMetaConfig;
+
 /**
  * 对生产者的测试
  *
@@ -47,14 +49,7 @@ public class TestProducer {
 
     }
 
-    public static MetaClientConfig initMetaConfig() {
-        final MetaClientConfig metaClientConfig = new MetaClientConfig();
-        final ZkUtils.ZKConfig zkConfig = new ZkUtils.ZKConfig();
-        zkConfig.zkConnect = "127.0.0.1:2181";
-        zkConfig.zkRoot = "/meta";
-        metaClientConfig.setZkConfig(zkConfig);
-        return metaClientConfig;
-    }
+
 
 
 }

@@ -104,39 +104,38 @@ public class DefaultRemoteClient implements RemoteClient {
     public void sendMessageToServer(String url, int port, Request request, Partition partition, SingleRequestCallBackListener listener, long time, TimeUnit unit) throws ExecutionException, InterruptedException, SimpleMQClientException {
         Executor executor = null;
 
-            FutureTask<Boolean> connectTask = futuretasks.get(generatekey(url, port));//确保在发送消息到服务器时连接已经建立完成；
-            connectTask.get();//确保连接已经建立完成
-            Channel channel = channels.get(generatekey(url, port));
-            if (Objects.isNull(channel) || !channel.isOpen()) {
-                throw new SimpleMQClientException("服务器通道异常关闭");
-            }
-            if (Objects.isNull(request) || Objects.isNull(request.getHeader())) {
-                logger.error("the data is error ,please ensure request and request's header not null ");
-                throw new SimpleMQClientException("the data is error ,please ensure request and request's header not null");
-            }
-            final ResponseFuture<Response, Request> responseFuture = new ResponseFuture<>();
-            responseFuture.setRequest(request);
-            channel.writeAndFlush(request);
-            responses.put(request.getHeader().getRequestId(), responseFuture);
-//            Response response = responseFuture.get(time, unit);
-            executor = listener.getExecutor();
-            if (Objects.isNull(executor)) {
-                executor = localExecutor;
-            }
-            executor.execute(() -> {
+        FutureTask<Boolean> connectTask = futuretasks.get(generatekey(url, port));//确保在发送消息到服务器时连接已经建立完成；
+        connectTask.get();//确保连接已经建立完成
+        Channel channel = channels.get(generatekey(url, port));
+        if (Objects.isNull(channel) || !channel.isOpen()) {
+            throw new SimpleMQClientException("服务器通道异常关闭");
+        }
+        if (Objects.isNull(request) || Objects.isNull(request.getHeader())) {
+            logger.error("the data is error ,please ensure request and request's header not null ");
+            throw new SimpleMQClientException("the data is error ,please ensure request and request's header not null");
+        }
+        final ResponseFuture<Response, Request> responseFuture = new ResponseFuture<>();
+        responseFuture.setRequest(request);
+        channel.writeAndFlush(request);
+        responses.put(request.getHeader().getRequestId(), responseFuture);
+        executor = listener.getExecutor();
+        Runnable runnable = new Runnable() {
+            @Override
+            public void run() {
                 try {
                     Response response = responseFuture.get(time, unit);
                     listener.onResponse(response);
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
+                } catch (Exception e) {
                     logger.info("fail to get response because of :{}", e);
                     listener.onException(e);
                 }
-            });
+            }
+        };
+        if (Objects.isNull(executor)) {
+            runnable.run();
         }
-
-
-
+        executor.execute(runnable);
+    }
 
 
     public void connect(int port, String host, int time) {
