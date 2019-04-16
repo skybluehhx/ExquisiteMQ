@@ -50,7 +50,7 @@ public class DefaultRemoteClient implements RemoteClient {
     }
 
     public ResponseFuture<Response, Request> sendMessageToServer(String url, int port, Request request, Partition partition) throws InterruptedException, ExecutionException, SimpleMQClientException {
-        System.out.println("53 defaultRemoteClient start to send message");
+//        System.out.println("53 defaultRemoteClient start to send message");
         FutureTask<Boolean> connectTask = futuretasks.get(generatekey(url, port));//确保在发送消息到服务器时连接已经建立完成；
         connectTask.get();//确保连接已经建立完成
         Channel channel = channels.get(generatekey(url, port));

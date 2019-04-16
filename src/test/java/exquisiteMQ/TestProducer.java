@@ -35,6 +35,7 @@ public class TestProducer {
                 InputStreamReader isr = new InputStreamReader(is);
                 BufferedReader br = new BufferedReader(isr);
                 String data = br.readLine();
+//                String data = "123";
                 final SendResult sendResult = producer.sendMessage(new Message(topic, data));
 
                 if (sendResult.isSuccess()) {

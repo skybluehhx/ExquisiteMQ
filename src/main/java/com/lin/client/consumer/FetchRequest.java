@@ -16,6 +16,7 @@ import java.util.concurrent.TimeUnit;
  */
 public class FetchRequest implements Delayed {
 
+    public static final int MAX_FETCH_SIZE = Integer.MAX_VALUE;
     // 延后的时间戳
     private long delayTimeStamp;
     private long delay;
@@ -68,7 +69,11 @@ public class FetchRequest implements Delayed {
 //                + "Bytes，请设置环境变量-Dnotify.remoting.max_read_buffer_size超过此限制");
 //            return;
 //        }
-        this.maxSize = 2 * this.maxSize;
+        if (maxSize < 0) {
+            log.warn("警告，maxSize已溢出");
+            maxSize = 1;
+        }
+        this.maxSize = this.maxSize + this.maxSize / 2;
     }
 
 

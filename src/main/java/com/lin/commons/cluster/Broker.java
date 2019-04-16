@@ -41,14 +41,14 @@ public class Broker {
         // ipv6
         if (this.host.contains(":")) {
             if (this.host.startsWith("[")) {
-                return "meta://" + this.host + ":" + this.port;
+                return "exquisitemq://" + this.host + ":" + this.port;
             }
             else {
-                return "meta://[" + this.host + "]:" + this.port;
+                return "exquisitemq://[" + this.host + "]:" + this.port;
             }
         }
         else {
-            return "meta://" + this.host + ":" + this.port;
+            return "exquisitemq://" + this.host + ":" + this.port;
         }
     }
 

@@ -23,7 +23,7 @@ public class TestConsumer {
         final MessageSessionFactory sessionFactory = new MetaMessageSessionFactory(initMetaConfig());
 
         // subscribed topic
-        final String topic = "meta-test";
+        final String topic = "lin";
         // consumer group
         final String group = "meta-example";
         // create consumer,强烈建议使用单例

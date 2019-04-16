@@ -139,9 +139,10 @@ public class DefaultExquisiteMQServer implements ExquisiteMQServer {
         logger.info("register broker's information to zk");
         ZkUtils.makeSurePersistentPathExists(zkClient, metaZookeeper.brokerIdsPath);
         String borkerPath = metaZookeeper.brokerIdsPath + "/" + brokerConfig.getBrokerId();
-        StringBuilder stringBuilder = new StringBuilder(zkConfig.getZkRoot()).append(":").append("//");
+        StringBuilder stringBuilder = new StringBuilder(zkConfig.getZkRoot().substring(1)).append(":").append("//");
         String brokersData = stringBuilder.append(brokerConfig.getHostName()).append(":").append(brokerConfig.getServerPort()).toString();
-        ZkUtils.createEphemeralPath(zkClient, borkerPath, null);
+        ZkUtils.makeSurePersistentPathExists(zkClient, borkerPath);
+//        ZkUtils.createEphemeralPath(zkClient, borkerPath, null);
         String masterPath = borkerPath + "/master";
         ZkUtils.createEphemeralPath(zkClient, masterPath, brokersData);
         registerSalves(borkerPath);

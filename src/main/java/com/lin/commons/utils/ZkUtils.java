@@ -243,7 +243,7 @@ public class ZkUtils {
         static final long serialVersionUID = -1L;
 
         @Key(name = "zk.zkRoot")
-        public String zkRoot = "/meta";
+        public String zkRoot = "/exquisitemq";
         /**
          * If enable zookeeper
          */

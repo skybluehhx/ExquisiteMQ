@@ -16,6 +16,7 @@ public interface DBConstant {
             "  `content` text COMMENT '消息的内容',\n" +
             "  `reqId` int(11) NOT NULL COMMENT '消息的reqId',\n" +
             "  `part` int(11) NOT NULL,\n" +
+            "  `brokerId` int(11) NOT NULL" +
             "  PRIMARY KEY (`id`)\n" +
             ") ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8;\n";
 
